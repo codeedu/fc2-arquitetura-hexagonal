@@ -8,4 +8,8 @@ RUN go install github.com/spf13/cobra/cobra@latest && \
 
 RUN apt-get update && apt-get install sqlite3 -y
 
+RUN usermod -u 1000 www-data
+
+USER www-data
+
 CMD ["tail", "-f", "/dev/null"]
