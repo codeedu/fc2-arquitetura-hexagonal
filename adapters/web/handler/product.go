@@ -102,6 +102,21 @@ func disableProduct(service application.ProductServiceInterface) http.Handler {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
+
+		var productDto dto.Product
+		err = json.NewDecoder(r.Body).Decode(&productDto)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write(jsonError(err.Error()))
+			return
+		}
+		err = product.ChangePrice(productDto.Price)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write(jsonError(err.Error()))
+			return
+		}
+
 		result, err := service.Disable(product)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
