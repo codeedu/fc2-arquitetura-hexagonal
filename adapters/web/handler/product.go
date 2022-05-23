@@ -2,20 +2,21 @@ package handler
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/codeedu/go-hexagonal/adapters/dto"
 	"github.com/codeedu/go-hexagonal/application"
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
-	"net/http"
 )
 
 func MakeProductHandlers(r *mux.Router, n *negroni.Negroni, service application.ProductServiceInterface) {
 	r.Handle("/product/{id}/enable", n.With(
 		negroni.Wrap(enableProduct(service)),
-	)).Methods("GET", "OPTIONS")
+	)).Methods("PUT", "OPTIONS")
 	r.Handle("/product/{id}/disable", n.With(
 		negroni.Wrap(disableProduct(service)),
-	)).Methods("GET", "OPTIONS")
+	)).Methods("PUT", "OPTIONS")
 	r.Handle("/product/{id}", n.With(
 		negroni.Wrap(getProduct(service)),
 	)).Methods("GET", "OPTIONS")
