@@ -2,20 +2,21 @@ package handler
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/codeedu/go-hexagonal/adapters/dto"
 	"github.com/codeedu/go-hexagonal/application"
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
-	"net/http"
 )
 
 func MakeProductHandlers(r *mux.Router, n *negroni.Negroni, service application.ProductServiceInterface) {
 	r.Handle("/product/{id}/enable", n.With(
 		negroni.Wrap(enableProduct(service)),
-	)).Methods("GET", "OPTIONS")
+	)).Methods("PUT", "OPTIONS")
 	r.Handle("/product/{id}/disable", n.With(
 		negroni.Wrap(disableProduct(service)),
-	)).Methods("GET", "OPTIONS")
+	)).Methods("PUT", "OPTIONS")
 	r.Handle("/product/{id}", n.With(
 		negroni.Wrap(getProduct(service)),
 	)).Methods("GET", "OPTIONS")
@@ -101,6 +102,21 @@ func disableProduct(service application.ProductServiceInterface) http.Handler {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
+
+		var productDto dto.Product
+		err = json.NewDecoder(r.Body).Decode(&productDto)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write(jsonError(err.Error()))
+			return
+		}
+		err = product.ChangePrice(productDto.Price)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write(jsonError(err.Error()))
+			return
+		}
+
 		result, err := service.Disable(product)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
